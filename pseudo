@@ -1,0 +1,20 @@
+let knapsack = the set of time segments, t 
+let viables = list of viable segments for an activity []
+Identify Function(duration, set segments = []):
+    if segment i not taken up by E:
+        if segment i in P(N(X, Y)):
+            if i.duration(segment) > duration
+                add to viables
+x = either 0 or 1
+if x = 1:
+    place event in segment
+else:
+    choose next highest event in segment
+v = value of segment t 
+for i in t:
+    if user is fL:
+        v = 100-n
+    else if user is bL:
+        v = 101-(100/n)
+summate v(i) * (x)i 
+t = [1, 2, 3, 4, 5, 6, 7, ]
