@@ -1,24 +1,51 @@
+from datetime import datetime
+
 class Event:
-    def __init__(rating = None, duration, start, end, name, isMovable):
+    def __init__(self,duration, start, end, name, isMovable = False, rating = None):
         rating
-        self.duration
-        start = 0
-        end = 2400
-        name = ""
-        isMovable = False
-# class Preference:
-#     def __init__(rating, duration, start, end, name,split):
-#         rating = 5
-#         duration = 0
-#         start = 0
-#         end = 2400
-#         name = ""
-#         split = false
+        self.duration = duration
+        self.start = start
+        self.end = end
+        self.name = name
+        self.isMovable = isMovable
+    def ratingAlgo(rating):
+       
+
 class main:
-   App1 = Appointment(5,120,1200,1400,"Econ")
-   App2 = Appointment(5,90,1600,1750,"English")
-   App3 = Appointment(5,60,900,1000,"CS club")
-   App4 = Appointment(5,50,1100,1150,"Math")
-   Pref1 = Preference(3,20,1100)
+   def military(military_time):
+    
+    military_time = int(military_time)
+    time_str = f"{military_time:04d}"  
+    return datetime.strptime(time_str, "%H%M")
+   #Constructor called in the format (Duration(min), starttime (24 hour clock), endtime (24 hour clock), name of event, movable boolean, rating)
+   App1 = Event(30, 930,1000,"Short Club")
+   App2 = Event(80,1100,1220,"English")
+   App3 = Event(80,1220,1350,"Discrete")
+   PREFf1= Event(20,800,930,"Breakfast",True)
+
+   dur = input("Duration: ")
+   sta = input("Start: ")
+   end = input("end: ")
+   name = input("name: ")
+   mov = input("is it moveable: ")
+
+   sta = military(sta)
+   end = military(end)
+   total_time = sta - end
+   if mov == "no" or "No":
+      mov = False
+   else:
+      mov = True
+
+
+   if mov == False and not (total_time == dur):
+       print("There is an error with your start and stop time")
+
+   App4 = Event(dur,sta,end,name,mov)
+   print(App4.duration)
+
+   
+
+
 
 
