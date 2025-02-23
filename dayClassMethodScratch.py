@@ -1,18 +1,6 @@
 from datetime import datetime
 from TCNJschedule import *
 
-class pEvent(Day): #
-    def __init__(self, start: str, end: str, name: str, value: int, isMovable = False):
-        
-        startDT = datetime.strptime(start, self.tformat)
-        endDT = datetime.strptime(end, self.tformat)
-
-        self.value = value # get from valueFunction
-        self.start = startDT # assg l8er
-        self.end = endDT # depends on start
-        self.name = name 
-        self.isMovable = isMovable
-        self.prefInterval, self.duration = self.intervalFunction()
 
 # whats next? this is the prefPeriod so we need to make a method for that
 class Knapsack:
