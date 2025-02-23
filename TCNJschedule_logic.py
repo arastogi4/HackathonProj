@@ -111,5 +111,8 @@ print(f"pEvent -> Name: {p1.name}, Interval: {p1.prefInterval}, Movable: {p1.isM
 print(p1.isWithinInterval("12:00")) # this should return True
 print(p1.isWithinInterval("09:00")) # this should return False
 print(p1.overlapCheck(e1)) # this should return True
-
+if __name__ == "__main__":
+    d1 = Event("06:00", "22:00")
+    interval, minutes = d1.intervalFunction()
+    print(f"Interval: {interval}, Difference in minutes: {minutes}")
 

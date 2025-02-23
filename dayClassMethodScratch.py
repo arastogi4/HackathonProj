@@ -1,5 +1,5 @@
 from datetime import datetime
-from TCNJschedule import *
+from TCNJschedule_logic import *
 
 
 # whats next? this is the prefPeriod so we need to make a method for that
