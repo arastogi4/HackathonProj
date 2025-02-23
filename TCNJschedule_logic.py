@@ -78,8 +78,8 @@ class pEvent(Event):
         super().__init__(start, end, isMovable = True)
  
         self.value = value # get from valueFunction
-        self.start = start # assg l8er
-        self.end = end # depends on start
+        self.start = start
+        self.end = end 
         self.name = name
         self.prefInterval, self.duration = self.intervalFunction()
     def adjustInterval(self, newStart, newEnd):
