@@ -1,118 +1,83 @@
 from datetime import datetime
+import tkinter as tk
+from tkinter import messagebox, Canvas
+
 class Event:
     def __init__(self, sTime: str, wTime: str, isMovable: bool = True):
         self.tformat = "%H:%M"
         self.sTimeObj = datetime.strptime(sTime, self.tformat)
         self.wTimeObj = datetime.strptime(wTime, self.tformat)
-
         self.isMovable = isMovable
-    # Convert to obj
-    def intervalFunction(self):
-        # sTimeObj = datetime.strptime(self.sTime, self.tformat)
-        # wTimeObj = datetime.strptime(self.wTime, self.tformat)
 
+    def intervalFunction(self):
         diffMins = int((self.wTimeObj - self.sTimeObj).total_seconds() / 60)
-        print(f"Difference in minutes before adjustment: {diffMins}")
-        
         if diffMins < 0:
             diffMins += 24 * 60
-        
         hrInterval = diffMins // 60
         minInterval = diffMins % 60
-        timeInterval = f"{hrInterval:02}:{minInterval:02}"
-        return timeInterval, diffMins
-    def adjustInterval(self, newStart: str, newEnd: str):
-        newStartObj = datetime.strptime(newStart, self.tformat)
-        newEndObj = datetime.strptime(newEnd, self.tformat)
-        if self.isMovable == False:
-            return "cannot adjust interval"
-        elif newStartObj < self.sTimeObj or newEndObj > self.wTimeObj:
-            return "cannot adjust interval"
+        return f"{hrInterval:02}:{minInterval:02}", diffMins
+
+class EventApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Event Calendar")
         
-        else: 
-            self.sTimeObj = newStartObj
-            self.wTimeObj = newEndObj
-            return self.intervalFunction()
-    def isWithinInterval(event, tCheck: str):
-        tCheckObj = datetime.strptime(tCheck, event.tformat)
-        if event.sTimeObj <= tCheckObj <= event.wTimeObj:
-            return True, f"The time {tCheck} falls within the event interval ({event.sTimeObj.strftime('%H:%M')} - {event.wTimeObj.strftime('%H:%M')})."
-        return False, f"The time {tCheck} does NOT fall within the event interval ({event.sTimeObj.strftime('%H:%M')} - {event.wTimeObj.strftime('%H:%M')})."
-    def overlapCheck(self, event2):
+        self.canvas = Canvas(root, width=500, height=400, bg="white")
+        self.canvas.grid(row=0, column=0, columnspan=3, padx=10, pady=10)
         
-        if self.isWithinInterval(event2.sTimeObj.strftime(self.tformat)) or self.isWithinInterval(event2.wTimeObj.strftime(self.tformat)):
-            overlapPt = event2.sTimeObj.strftime(self.tformat) or event2.wTimeObj.strftime(self.tformat)
-            return True, f"Event {event2.name} overlaps with event {self.name} at {overlapPt}. {event2.name}."
-        return False, f"Event {event2.name} does NOT overlap with event {self.name}."
-
-    def overlapFix(self, event2):
-
-        def overlapPointType(overlapPoint):
-            overlapTime = overlapPoint.strftime(self.tformat)
-            if overlapTime == event2.sTimeObj.strftime(self.tformat):
-                return "start"
-            elif overlapTime == event2.wTimeObj.strftime(self.tformat):
-                return "end"
-            else:
-                return "middle"
-        if isinstance(event2, pEvent):
-            overlapPoint = max(self.sTimeObj, event2.sTimeObj)  # Where the overlap starts
-            pointType = overlapPointType(overlapPoint)
-
-            if pointType == "start":
-                # Adjust event2's start time forward to match self's end time
-                event2.adjustInterval(self.wTimeObj.strftime(self.tformat), event2.wTimeObj.strftime(self.tformat))
-            elif pointType == "end":
-                # Adjust event2's end time backward to match self's start time
-                event2.adjustInterval(event2.sTimeObj.strftime(self.tformat), self.sTimeObj.strftime(self.tformat))
-            elif pointType == "middle":
-                # If event2 is fully contained within self, shrink it to avoid overlap
-                event2.adjustInterval(self.wTimeObj.strftime(self.tformat), event2.wTimeObj.strftime(self.tformat))
-            if event2 is type() == pEvent:
-                if event2.overlapPointType == "start":
-                    event2.adjustInterval(event2.sTimeObj.strftime(self.tformat), self.sTimeObj.strftime(self.tformat))
-        pass
-
-class pEvent(Event):
-    def __init__(self, start: str, end: str, name: str, value: int):
-        super().__init__(start, end, isMovable = True)
- 
-        self.value = value # get from valueFunction
-        self.start = start
-        self.end = end 
-        self.name = name
-        self.prefInterval, self.duration = self.intervalFunction()
-    def adjustInterval(self, newStart, newEnd):
-        super().adjustInterval(newStart, newEnd)
-        self.prefInterval, self.duration = self.intervalFunction()
+        tk.Label(root, text="Start Time (HH:MM):").grid(row=1, column=0, padx=5, pady=5)
+        self.startTimeInput = tk.Entry(root)
+        self.startTimeInput.grid(row=1, column=1, padx=5, pady=5)
         
+        tk.Label(root, text="End Time (HH:MM):").grid(row=2, column=0, padx=5, pady=5)
+        self.endTimeInput = tk.Entry(root)
+        self.endTimeInput.grid(row=2, column=1, padx=5, pady=5)
         
+        self.movableCheckBoxVar = tk.BooleanVar()
+        self.movableCheckBox = tk.Checkbutton(root, text="Movable Event", variable=self.movableCheckBoxVar)
+        self.movableCheckBox.grid(row=3, columnspan=2, padx=5, pady=5)
+        
+        self.addButton = tk.Button(root, text="Add Event", command=self.addEvent)
+        self.addButton.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
+        
+        self.events = []
+        self.event_widgets = []
+    
+    def addEvent(self):
+        sTime = self.startTimeInput.get()
+        wTime = self.endTimeInput.get()
+        isMovable = self.movableCheckBoxVar.get()
+        
+        try:
+            event = Event(sTime, wTime, isMovable)
+            self.events.append(event)
+            self.displayEvent(event)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid time format. Please use HH:MM.")
+    
+    def displayEvent(self, event):
+        y_pos = len(self.events) * 40 + 20
+        event_widget = self.canvas.create_rectangle(50, y_pos, 450, y_pos + 30, fill="lightblue")
+        text_widget = self.canvas.create_text(250, y_pos + 15, text=f"{event.sTimeObj.strftime('%H:%M')} - {event.wTimeObj.strftime('%H:%M')}")
+        
+        if event.isMovable:
+            self.canvas.tag_bind(event_widget, "<ButtonPress-1>", lambda e, ew=event_widget: self.startMove(e, ew))
+            self.canvas.tag_bind(event_widget, "<B1-Motion>", lambda e, ew=event_widget: self.onMove(e, ew))
+            self.canvas.tag_bind(text_widget, "<ButtonPress-1>", lambda e, ew=event_widget: self.startMove(e, ew))
+            self.canvas.tag_bind(text_widget, "<B1-Motion>", lambda e, ew=event_widget: self.onMove(e, ew))
+            
+        self.event_widgets.append((event_widget, text_widget))
+    
+    def startMove(self, event, widget):
+        self.canvas.tag_raise(widget)
+        self.lastY = event.y
+    
+    def onMove(self, event, widget):
+        dy = event.y - self.lastY
+        self.canvas.move(widget, 0, dy)
+        self.lastY = event.y
 
-class eEvent(Event):
-    def __init__(self, start: str, end: str, name: str, value: int):
-        super().__init__(start, end, isMovable=False)
-        self.value = value
-        self.name = name
-        self.durationInterval, self.duration = self.intervalFunction()
-
-d1 = Event("06:00", "22:00") # this should return 16 hours and 960 minutes
-interval, minutes = d1.intervalFunction()
-print(f"Interval: {interval}, Difference in minutes: {minutes}\n")
-
-p1 = pEvent("10:00", "14:00", "Meeting", 5) # this should return 4 hours and 240 minutes
-print(f"pEvent -> Name: {p1.name}, Interval: {p1.prefInterval}, Movable: {p1.isMovable}\n")
-
-e1 = eEvent("12:00", "15:30", "Workshop", 8) # this should return 3:30 hours and 210 minutes
-print(f"eEvent -> Name: {e1.name}, Interval: {e1.durationInterval}, Movable: {e1.isMovable}\n")
-
-p1.adjustInterval("11:00", "13:00") # this should return 2 hours and 120 minutes
-print(f"pEvent -> Name: {p1.name}, Interval: {p1.prefInterval}, Movable: {p1.isMovable}\n")
-
-print(p1.isWithinInterval("12:00")) # this should return True
-print(p1.isWithinInterval("09:00")) # this should return False
-print(p1.overlapCheck(e1)) # this should return True
 if __name__ == "__main__":
-    d1 = Event("06:00", "22:00")
-    interval, minutes = d1.intervalFunction()
-    print(f"Interval: {interval}, Difference in minutes: {minutes}")
-
+    root = tk.Tk()
+    app = EventApp(root)
+    root.mainloop()

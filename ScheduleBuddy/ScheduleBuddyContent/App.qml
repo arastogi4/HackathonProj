@@ -1,19 +1,13 @@
-// Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 
-import QtQuick
-import ScheduleBuddy
-
-Window {
-    width: mainScreen.width
-    height: mainScreen.height
-
+ApplicationWindow {
     visible: true
-    title: "ScheduleBuddy"
+    width: 800
+    height: 600
 
-    Screen01 {
-        id: mainScreen
+    // Load User Matching Screen
+    UserMatchingScreen {
+        anchors.fill: parent
     }
-
 }
-
