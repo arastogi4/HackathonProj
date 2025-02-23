@@ -33,11 +33,47 @@ class Event:
             self.sTimeObj = newStartObj
             self.wTimeObj = newEndObj
             return self.intervalFunction()
-    
-    def overlaps(self, other): # check if two events overlap. if they do, check if the events overlapping are movable, and if they are, adjust the interval. 
+    def isWithinInterval(event, tCheck: str):
+        tCheckObj = datetime.strptime(tCheck, event.tformat)
+        if event.sTimeObj <= tCheckObj <= event.wTimeObj:
+            return True, f"The time {tCheck} falls within the event interval ({event.sTimeObj.strftime('%H:%M')} - {event.wTimeObj.strftime('%H:%M')})."
+        return False, f"The time {tCheck} does NOT fall within the event interval ({event.sTimeObj.strftime('%H:%M')} - {event.wTimeObj.strftime('%H:%M')})."
+    def overlapCheck(self, event2):
+        
+        if self.isWithinInterval(event2.sTimeObj.strftime(self.tformat)) or self.isWithinInterval(event2.wTimeObj.strftime(self.tformat)):
+            overlapPt = event2.sTimeObj.strftime(self.tformat) or event2.wTimeObj.strftime(self.tformat)
+            return True, f"Event {event2.name} overlaps with event {self.name} at {overlapPt}. {event2.name}."
+        return False, f"Event {event2.name} does NOT overlap with event {self.name}."
+
+    def overlapFix(self, event2):
+
+        def overlapPointType(overlapPoint):
+            overlapTime = overlapPoint.strftime(self.tformat)
+            if overlapTime == event2.sTimeObj.strftime(self.tformat):
+                return "start"
+            elif overlapTime == event2.wTimeObj.strftime(self.tformat):
+                return "end"
+            else:
+                return "middle"
+        if isinstance(event2, pEvent):
+            overlapPoint = max(self.sTimeObj, event2.sTimeObj)  # Where the overlap starts
+            pointType = overlapPointType(overlapPoint)
+
+            if pointType == "start":
+                # Adjust event2's start time forward to match self's end time
+                event2.adjustInterval(self.wTimeObj.strftime(self.tformat), event2.wTimeObj.strftime(self.tformat))
+            elif pointType == "end":
+                # Adjust event2's end time backward to match self's start time
+                event2.adjustInterval(event2.sTimeObj.strftime(self.tformat), self.sTimeObj.strftime(self.tformat))
+            elif pointType == "middle":
+                # If event2 is fully contained within self, shrink it to avoid overlap
+                event2.adjustInterval(self.wTimeObj.strftime(self.tformat), event2.wTimeObj.strftime(self.tformat))
+            if event2 is type() == pEvent:
+                if event2.overlapPointType == "start":
+                    event2.adjustInterval(event2.sTimeObj.strftime(self.tformat), self.sTimeObj.strftime(self.tformat))
         pass
 
-class pEvent(Event): #
+class pEvent(Event):
     def __init__(self, start: str, end: str, name: str, value: int):
         super().__init__(start, end, isMovable = True)
  
@@ -50,16 +86,6 @@ class pEvent(Event): #
         super().adjustInterval(newStart, newEnd)
         self.prefInterval, self.duration = self.intervalFunction()
         
-    # def adjustInterval(self, newStart: str, newEnd: str):
-
-    #     newStartObj = datetime.strptime(newStart, self.tformat)
-    #     newEndObj = datetime.strptime(newEnd, self.tformat)
-
-    #     if newStartObj < self.start or newEndObj > self.end: # if the new interval is outside the preferred interval, it cannot be scheduled
-    #         return "cannot adjust interval"
-    #     newInterval, newDuration = self.intervalFunction()
-    #     print(f"New interval: {newInterval}, New duration: {newDuration}")
-    #     self.prefInterval, self.duration = newInterval, newDuration
         
 
 class eEvent(Event):
@@ -81,5 +107,9 @@ print(f"eEvent -> Name: {e1.name}, Interval: {e1.durationInterval}, Movable: {e1
 
 p1.adjustInterval("11:00", "13:00") # this should return 2 hours and 120 minutes
 print(f"pEvent -> Name: {p1.name}, Interval: {p1.prefInterval}, Movable: {p1.isMovable}\n")
+
+print(p1.isWithinInterval("12:00")) # this should return True
+print(p1.isWithinInterval("09:00")) # this should return False
+print(p1.overlapCheck(e1)) # this should return True
 
 
