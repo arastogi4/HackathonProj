@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['TCNJschedule_app.py'],
+    ['TCNJSchedule_app.py'],
     pathex=[],
     binaries=[],
     datas=[],
